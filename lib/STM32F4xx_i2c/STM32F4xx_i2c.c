@@ -5,8 +5,8 @@
  *      Author: milesosborne
  */
 
-#include "stm32f407xx.h"
-#include "stm32f407xx_i2c_driver.h"
+#include "STM32F4xx_base.h"
+#include "STM32F4xx_i2c.h"
 
 /*********************************************************************
  * @fn				-
@@ -329,75 +329,6 @@ void i2c_software_reset(I2C_RegDef_t *pI2Cx)
 	return;
 }
 
-#if 0 
-/*********************************************************************
- * @fn				-
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void i2c_master_write(I2C_Handle_t *pI2CHandle, uint8_t *pTxBuffer, uint8_t len, uint8_t slaveAddr)
-{
-	uint32_t tempreg;
-
-	//1. Generate START condition
-	i2c_generate_start(pI2CHandle->pI2Cx);
-
-	//2. Confirm START bit generation and clear I2C_SR1_CB
-	//NOTE: SB is cleared by reading I2C_SR1 and writing the device address in I2C_DR
-	//NOTE: Until SB is cleared, SCL will be stretched (pulled to LOW)
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_SB))
-	{
-	}
-
-	tempreg = pI2CHandle->pI2Cx->I2C_SR1;
-	//3. Send the address of the slave with r/nw bit set to 0
-	i2c_address_phase_write(pI2CHandle->pI2Cx, slaveAddr);
-
-	//4. Wait until address phase is completed
-	//NOTE: Clear ADDR flag by reading I2C_SR1 followed by reading I2C_SR2
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_ADDR))
-	{
-	}
-	i2c_clear_addr_flag(pI2CHandle->pI2Cx);
-
-	while (len > 0)
-	{
-		//Wait until TxE flag is set
-		//NOTE: TxE flag indicates that the data register is empty/ not empty
-		while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_TXE))
-		{
-		}
-
-		//Write data into DR
-		pI2CHandle->pI2Cx->I2C_DR |= *pTxBuffer;
-
-		len--;
-		if (len > 0)
-		{
-			pTxBuffer++;
-		}
-	}
-
-	//Wait uhntil TxE and BTF are set, then generate stop condition
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_TXE))
-	{
-	}
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_BTF))
-	{
-	}
-
-	i2c_generate_stop(pI2CHandle->pI2Cx);
-}
-#endif
-
 /*********************************************************************
  * @fn				- i2c_master_write
  *
@@ -492,98 +423,6 @@ void i2c_master_write(I2C_Handle_t *pI2CHandle, I2C_RegDef_t *pI2Cx, uint8_t sla
 	pI2Cx->I2C_DR &= 0;
 	return;
 }
-
-#if 0
-/*********************************************************************
- * @fn				-
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void i2c_master_read(I2C_Handle_t *pI2CHandle, uint8_t *pRxBuffer, uint8_t len, uint8_t slaveAddr)
-{
-	uint32_t tempreg;
-
-	//1. Generate START condition
-	i2c_generate_start(pI2CHandle->pI2Cx);
-
-	//2. Confirm that start generation is completeed by checking the SB flag in I2C_SR1
-	//	Note: Until SB is cleared, SCL will be stretched (pulled to LOW)
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_SB))
-	{
-	}
-
-	tempreg = pI2CHandle->pI2Cx->I2C_SR1;
-	//3. Send the address of the slave with r/nw bit set to R(1) (total 8 bits)
-	i2c_address_phase_read(pI2CHandle->pI2Cx, slaveAddr);
-
-	//4. Wait until address phase is completed by checking the ADDR flag in I2C_SR1
-	while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_ADDR))
-	{
-	}
-
-	//Procedure to read only 1 byte from slave
-	if (len == 1)
-	{
-		//Disable Acking
-		i2c_ack_disable(pI2CHandle->pI2Cx);
-
-		//Generate STOP condition
-		i2c_generate_stop(pI2CHandle->pI2Cx);
-
-		//Read data into buffer
-		*pRxBuffer = pI2CHandle->pI2Cx->I2C_DR;
-		pRxBuffer++;
-
-		//Wait until RXNE becomes 1
-		while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_RXNE))
-			;
-
-		//Read data register to stop transmission
-		*pRxBuffer = pI2CHandle->pI2Cx->I2C_DR;
-
-		return;
-	}
-	else if (len > 1)
-	{
-
-		//clear the ADDR flag
-		i2c_clear_addr_flag(pI2CHandle->pI2Cx);
-
-		//read the data until len becomes zero
-		for (uint32_t i = len; i > 0; i--)
-		{
-			//wait until RXNE becomes 1
-			while (!i2c_get_flag_status(pI2CHandle->pI2Cx, I2C_FLAG_RXNE))
-				;
-
-			if (i == 2) //last 2 bytes are remaining
-			{
-				//disable acking
-				i2c_ack_disable(pI2CHandle->pI2Cx);
-
-				//generate STOP condition
-				i2c_generate_stop(pI2CHandle->pI2Cx);
-			}
-
-			//read the data from data register in to buffer
-			*pRxBuffer = pI2CHandle->pI2Cx->I2C_DR;
-
-			//increment the buffer address
-			pRxBuffer++;
-		}
-	}
-	//re-enable acking
-	i2c_ack_enable(pI2CHandle->pI2Cx);
-}
-#endif
 
 /*********************************************************************
  * @fn				-i2c_master_read

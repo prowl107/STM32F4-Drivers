@@ -8,7 +8,7 @@
 #ifndef INC_STM32F4XX_SPI_DRIVER_H_
 #define INC_STM32F4XX_SPI_DRIVER_H_
 
-#include "stm32f407xx_base_driver.h"
+#include "STM32F4xx_base.h"
 
 /*
  *  Configuration structure for SPIx peripheral

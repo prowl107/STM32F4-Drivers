@@ -1,14 +1,17 @@
-/*
- * stm32f407xx_gpio_driver.h
- *
- *  Created on: Feb 22, 2021
- *      Author: milesosborne
+/**
+ * @file STM32F4xx_GPIO.c
+ * 
+ * @brief GPIO drivers and api for STM32F4xx microcontrollers and development boards
+ * 
+ * @author Miles Osborne
+ * contact: milesosborne182@gmail.com
+ * 
  */
 
 #ifndef INC_STM32F407XX_GPIO_DRIVER_H_
 #define INC_STM32F407XX_GPIO_DRIVER_H_
 
-#include "stm32f407xx_base_driver.h"
+#include "STM32F4xx_base.h"
 
 /*
  * Handle structure for a GPIO pin
@@ -63,6 +66,8 @@ typedef struct
 #define GPIO_MODE_IT_FT 4  //GPIO pin interrupt mode falling edge trigger
 #define GPIO_MODE_IT_RT 5  //GPIO pin interrupt mode rising edge trigger
 #define GPIO_MODE_IT_RFT 6 //GPIO pin interrupt mode rising/falling edge trigger
+#define INPUT GPIO_MODE_INPUT
+#define OUTPUT GPIO_MODE_OUTPUT
 
 /*
  * @GPIO_OUTPUT_TYPE

@@ -5,7 +5,7 @@
  *      Author: milesosborne
  */
 
-#include "stm32f407xx_base_driver.h"
+#include "STM32F4xx_base.h"
 
 #ifndef INC_STM32F407XX_I2C_DRIVER_H_
 #define INC_STM32F407XX_I2C_DRIVER_H_

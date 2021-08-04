@@ -1,11 +1,13 @@
-/*
- * stm32f407xx_gpio_driver.c
- *
- *  Created on: Feb 22, 2021
- *      Author: milesosborne
+/**
+ * @file STM32F4xx_GPIO.c
+ * 
+ * @brief GPIO drivers and api for STM32F4xx microcontrollers and development boards
+ * 
+ * @author Miles Osborne
+ * contact: milesosborne182@gmail.com
+ * 
  */
-
-#include "stm32f407xx_gpio_driver.h"
+#include "STM32F4xx_GPIO.h"
 
 /*
  * Peripheral Clock Setup

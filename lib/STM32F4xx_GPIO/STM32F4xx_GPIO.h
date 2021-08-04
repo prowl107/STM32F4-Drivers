@@ -185,29 +185,31 @@ typedef struct
 /*
  * Peripheral Clock Setup
  */
-void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t Enable_Disable);
+void GPIO_clock_enable(GPIO_RegDef_t *pGPIOx);
+void GPIO_clock_disable(GPIO_RegDef_t *pGPIOx);
+void GPIO_reset(GPIO_RegDef_t *pGPIOx);
 
 /*
  * Init and De-init
  */
-void GPIO_Init(GPIO_Handle_t *pGPIOHandle);
-void GPIO_DeInit(GPIO_RegDef_t *pGPIOx);
+void GPIO_init(GPIO_Handle_t *pGPIOHandle);
+void GPIO_deinit(GPIO_RegDef_t *pGPIOx);
 
 /*
  * Data read and write
  */
-uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber);
-uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx); //Reads data from all 16 pins of an GPIO port
-void GPIO_WriteToOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber, uint8_t value);
-void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx, uint16_t value);
-void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint16_t pinNumber);
+uint8_t GPIO_read_input_pin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber);
+uint16_t GPIO_read_input_port(GPIO_RegDef_t *pGPIOx); //Reads data from all 16 pins of an GPIO port
+void GPIO_write_pin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber, uint8_t value);
+void GPIO_write_port(GPIO_RegDef_t *pGPIOx, uint16_t value);
+void GPIO_toggle_output_pin(GPIO_RegDef_t *pGPIOx, uint16_t pinNumber);
 
 /*
  * IRQ Configuration and ISR handling
  */
-void GPIO_InterruptConfig(uint8_t IRQNumber, uint8_t Enable_Disable);
-void GPIO_InterruptPriorityConfig(uint8_t IRQNumber, uint32_t Priority);
-void GPIO_IRQHandling(uint16_t pinNumber);
+void GPIO_interrupt_config(uint8_t IRQNumber, uint8_t Enable_Disable);
+void GPIO_interrupt_priority_config(uint8_t IRQNumber, uint32_t Priority);
+void GPIO_IRQ_handle(uint16_t pinNumber);
 
 /*
  * Other API supported by this peripheral

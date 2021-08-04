@@ -14,97 +14,146 @@
  */
 
 /*********************************************************************
- * @fn      		  - GPIO_PeriClockControl
+ * @fn      		  - GPIO_clock_enable
  *
- * @brief             - This function enables or disables peripheral clock for the given GPIO port
+ * @brief             - Enables peripheral clock for the given GPIO port
  *
  * @param[in]         - base address of the gpio peripheral (pGPIOx)
- * @param[in]         - ENABLE or DISABLE macros (Enable_Disable)
+ * @param[in]         - 
  * @param[in]         -
  *
  * @return            -  none
  *
  * @Note              -  none
  */
-void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t Enable_Disable)
+void GPIO_clock_enable(GPIO_RegDef_t *pGPIOx)
 {
-	if (Enable_Disable == ENABLE)
+	uint32_t address = (uint32_t)&pGPIOx;
+	switch (address)
 	{
-		if (pGPIOx == GPIOA)
-		{
-			GPIOA_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOB)
-		{
-			GPIOB_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOC)
-		{
-			GPIOC_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOD)
-		{
-			GPIOD_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOE)
-		{
-			GPIOE_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOF)
-		{
-			GPIOF_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOG)
-		{
-			GPIOG_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOH)
-		{
-			GPIOH_PCLK_EN();
-		}
-		else if (pGPIOx == GPIOI)
-		{
-			GPIOI_PCLK_EN();
-		}
+	case (GPIOA_BASE):
+		GPIOA_PCLK_EN();
+		break;
+	case (GPIOB_BASE):
+		GPIOB_PCLK_EN();
+		break;
+	case (GPIOC_BASE):
+		GPIOC_PCLK_EN();
+		break;
+	case (GPIOD_BASE):
+		GPIOD_PCLK_EN();
+		break;
+	case (GPIOE_BASE):
+		GPIOE_PCLK_EN();
+		break;
+	case (GPIOF_BASE):
+		GPIOF_PCLK_EN();
+		break;
+	case (GPIOG_BASE):
+		GPIOG_PCLK_EN();
+		break;
+	case (GPIOH_BASE):
+		GPIOH_PCLK_EN();
+		break;
+	case (GPIOI_BASE):
+		GPIOI_PCLK_EN();
+		break;
 	}
-	else
+}
+
+/*********************************************************************
+ * @fn      		  - GPIO_clock_disable
+ *
+ * @brief             - Disables peripheral clock for the given GPIO port
+ *
+ * @param[in]         - base address of the gpio peripheral (pGPIOx)
+ * @param[in]         - 
+ * @param[in]         -
+ *
+ * @return            -  none
+ *
+ * @Note              -  none
+ */
+void GPIO_clock_disable(GPIO_RegDef_t *pGPIOx)
+{
+	uint32_t address = (uint32_t)&pGPIOx;
+	switch (address)
 	{
-		if (pGPIOx == GPIOA)
-		{
-			GPIOA_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOB)
-		{
-			GPIOB_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOC)
-		{
-			GPIOC_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOD)
-		{
-			GPIOD_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOE)
-		{
-			GPIOE_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOF)
-		{
-			GPIOF_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOG)
-		{
-			GPIOG_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOH)
-		{
-			GPIOH_PCLK_DI();
-		}
-		else if (pGPIOx == GPIOI)
-		{
-			GPIOI_PCLK_DI();
-		}
+	case (GPIOA_BASE):
+		GPIOA_PCLK_DI();
+		break;
+	case (GPIOB_BASE):
+		GPIOB_PCLK_DI();
+		break;
+	case (GPIOC_BASE):
+		GPIOC_PCLK_DI();
+		break;
+	case (GPIOD_BASE):
+		GPIOD_PCLK_DI();
+		break;
+	case (GPIOE_BASE):
+		GPIOE_PCLK_DI();
+		break;
+	case (GPIOF_BASE):
+		GPIOF_PCLK_DI();
+		break;
+	case (GPIOG_BASE):
+		GPIOG_PCLK_DI();
+		break;
+	case (GPIOH_BASE):
+		GPIOH_PCLK_DI();
+		break;
+	case (GPIOI_BASE):
+		GPIOI_PCLK_DI();
+		break;
+	}
+}
+
+/*********************************************************************
+ * @fn      		  - GPIO_reset
+ *
+ * @brief             - Sets specified GPIO port back to reset values
+ *
+ * @param[in]         - base address of the gpio peripheral (pGPIOx)
+ * @param[in]         - 
+ * @param[in]         -
+ *
+ * @return            -  none
+ *
+ * @Note              -  The GPIO port/register must be reconfigured before being used
+ */
+void GPIO_reset(GPIO_RegDef_t *pGPIOx)
+{
+	uint32_t address = (uint32_t)&pGPIOx;
+	switch (address)
+	{
+	case (GPIOA_BASE):
+		GPIOA_REG_RESET();
+		break;
+	case (GPIOB_BASE):
+		GPIOB_REG_RESET();
+		break;
+	case (GPIOC_BASE):
+		GPIOC_REG_RESET();
+		break;
+	case (GPIOD_BASE):
+		GPIOD_REG_RESET();
+		break;
+	case (GPIOE_BASE):
+		GPIOE_REG_RESET();
+		break;
+	case (GPIOF_BASE):
+		GPIOF_REG_RESET();
+		break;
+	case (GPIOG_BASE):
+		GPIOG_REG_RESET();
+		break;
+	case (GPIOH_BASE):
+		GPIOH_REG_RESET();
+		break;
+	case (GPIOI_BASE):
+		GPIOI_REG_RESET();
+		break;
 	}
 }
 
@@ -121,11 +170,11 @@ void GPIO_PeriClockControl(GPIO_RegDef_t *pGPIOx, uint8_t Enable_Disable)
  *
  * @Note              -  none
  */
-void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
+void GPIO_init(GPIO_Handle_t *pGPIOHandle)
 {
 
 	//Enable GPIO peripheral clock
-	GPIO_PeriClockControl(pGPIOHandle->pGPIOx, ENABLE);
+	GPIO_clock_enable(pGPIOHandle->pGPIOx);
 
 	uint32_t configuration; //saves the pinMode configuration
 
@@ -193,7 +242,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		}
 		else
 		{
-			configuration = pGPIOHandle->PinConfig.GPIO_PinAltFuncMode << ((pGPIOHandle->PinConfig.GPIO_PinNumber-8) * 4);
+			configuration = pGPIOHandle->PinConfig.GPIO_PinAltFuncMode << ((pGPIOHandle->PinConfig.GPIO_PinNumber - 8) * 4);
 			pGPIOHandle->pGPIOx->AFRH |= configuration;
 		}
 	}
@@ -212,7 +261,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
  *
  * @Note              -  Assuming that reset will wipe all the GPIO register configurations
  */
-void GPIO_DeInit(GPIO_RegDef_t *pGPIOx)
+void GPIO_deinit(GPIO_RegDef_t *pGPIOx)
 {
 	uint32_t address = (uint32_t)&pGPIOx;
 	switch (address)
@@ -260,7 +309,7 @@ void GPIO_DeInit(GPIO_RegDef_t *pGPIOx)
  *
  * @Note              -  none
  */
-uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber)
+uint8_t GPIO_read_input_pin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber)
 {
 	uint16_t value;
 	value = pGPIOx->IDR;
@@ -286,7 +335,7 @@ uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber)
  *
  * @Note              -  none
  */
-uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx)
+uint16_t GPIO_read_input_port(GPIO_RegDef_t *pGPIOx)
 {
 	uint16_t value = (uint16_t)pGPIOx->IDR;
 	return value;
@@ -305,7 +354,7 @@ uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx)
  *
  * @Note              -  none
  */
-void GPIO_WriteToOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber, uint8_t value)
+void GPIO_write_pin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber, uint8_t value)
 {
 	if (value >= GPIO_PIN_SET)
 	{
@@ -332,7 +381,7 @@ void GPIO_WriteToOutputPin(GPIO_RegDef_t *pGPIOx, uint8_t pinNumber, uint8_t val
  *
  * @Note              -  none
  */
-void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx, uint16_t value)
+void GPIO_write_port(GPIO_RegDef_t *pGPIOx, uint16_t value)
 {
 	pGPIOx->ODR = (uint32_t)value;
 }
@@ -350,7 +399,7 @@ void GPIO_WriteToOutputPort(GPIO_RegDef_t *pGPIOx, uint16_t value)
  *
  * @Note              -  none
  */
-void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint16_t pinNumber)
+void GPIO_toggle_output_pin(GPIO_RegDef_t *pGPIOx, uint16_t pinNumber)
 {
 	pGPIOx->ODR ^= (1 << pinNumber);
 }
@@ -368,7 +417,7 @@ void GPIO_ToggleOutputPin(GPIO_RegDef_t *pGPIOx, uint16_t pinNumber)
  *
  * @Note              -  none
  */
-void GPIO_InterruptConfig(uint8_t IRQNumber, uint8_t Enable_Disable)
+void GPIO_interrupt_config(uint8_t IRQNumber, uint8_t Enable_Disable)
 {
 	if (Enable_Disable == ENABLE)
 	{
@@ -421,7 +470,7 @@ void GPIO_InterruptConfig(uint8_t IRQNumber, uint8_t Enable_Disable)
  *
  * @Note              -  none
  */
-void GPIO_InterruptPriorityConfig(uint8_t IRQNumber, uint32_t Priority)
+void GPIO_interrupt_priority_config(uint8_t IRQNumber, uint32_t Priority)
 {
 	// Find ipr register
 	uint8_t iprx = IRQNumber / 4;
@@ -449,7 +498,7 @@ void GPIO_InterruptPriorityConfig(uint8_t IRQNumber, uint32_t Priority)
  *
  * @Note              -  none
  */
-void GPIO_IRQHandling(uint16_t pinNumber)
+void GPIO_IRQ_handle(uint16_t pinNumber)
 {
 	//Clear the EXTI PR register corresponding to the pin number
 	if (EXTI->PR & (1 << pinNumber))

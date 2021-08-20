@@ -12,6 +12,7 @@
 #define INC_STM32F407XX_GPIO_DRIVER_H_
 
 #include "STM32F4xx_base.h"
+#include "STM32F4xx_RCC.h"
 
 /*
  * Handle structure for a GPIO pin

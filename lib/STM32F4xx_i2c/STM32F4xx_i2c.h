@@ -6,6 +6,7 @@
  */
 
 #include "STM32F4xx_base.h"
+#include "STM32F4xx_RCC.h"
 
 #ifndef INC_STM32F407XX_I2C_DRIVER_H_
 #define INC_STM32F407XX_I2C_DRIVER_H_
@@ -34,20 +35,6 @@ typedef struct
 	I2C_RegDef_t *pI2Cx;
 	I2C_Config_t I2C_Config;
 } I2C_Handle_t;
-
-/*
- * Clock Enable Macros for I2Cx peripherals
- */
-#define I2C1_PCLK_EN() (RCC->APB1ENR |= (1 << 21))
-#define I2C2_PCLK_EN() (RCC->APB1ENR |= (1 << 22))
-#define I2C3_PCLK_EN() (RCC->APB1ENR |= (1 << 23))
-
-/*
- * Clock Disable Macros for I2Cx peripherals
- */
-#define I2C1_PCLK_DI() (RCC->APB1ENR &= ~(1 << 21))
-#define I2C2_PCLK_DI() (RCC->APB1ENR &= ~(1 << 22))
-#define I2C3_PCLK_DI() (RCC->APB1ENR &= ~(1 << 23))
 
 /*
  * @I2C_Mode

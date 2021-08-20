@@ -1,6 +1,9 @@
-/*
- * stm32f4xx_spi_driver.h
+/** @file STM32F4xx_SPI.h
+ * 
+ * @brief SPI drivers for STM32F4 MCUs
  *
+ * @par
+ * 
  *  Created on: Mar 25, 2021
  *      Author: milesosborne
  */
@@ -9,6 +12,7 @@
 #define INC_STM32F4XX_SPI_DRIVER_H_
 
 #include "STM32F4xx_base.h"
+#include "STM32F4xx_RCC.h"
 
 /*
  *  Configuration structure for SPIx peripheral
@@ -183,7 +187,8 @@ typedef struct
 /*
  * Peripheral clock control
  */
-void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable);
+void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx);
+void SPI_peripheral_clock_disable(SPI_RegDef_t *pSPIx);
 
 /*
  * Initialization / Deinitialization

@@ -264,54 +264,6 @@ void GPIO_init(GPIO_Handle_t *pGPIOHandle)
 }
 
 /*********************************************************************
- * @fn      	      - GPIO_DeInit
- *
- * @brief             - Resets the specified GPIO Port
- *
- * @param[in]         - base address of the GPIO peripheral (pGPIOx)
- * @param[in]         -
- * @param[in]         -
- *
- * @return            -  none
- *
- * @Note              -  Assuming that reset will wipe all the GPIO register configurations
- */
-void GPIO_deinit(GPIO_RegDef_t *pGPIOx)
-{
-	uint32_t address = (uint32_t)&pGPIOx;
-	switch (address)
-	{
-	case (GPIOA_BASE):
-		GPIOA_REG_RESET();
-		break;
-	case (GPIOB_BASE):
-		GPIOB_REG_RESET();
-		break;
-	case (GPIOC_BASE):
-		GPIOC_REG_RESET();
-		break;
-	case (GPIOD_BASE):
-		GPIOD_REG_RESET();
-		break;
-	case (GPIOE_BASE):
-		GPIOE_REG_RESET();
-		break;
-	case (GPIOF_BASE):
-		GPIOF_REG_RESET();
-		break;
-	case (GPIOG_BASE):
-		GPIOG_REG_RESET();
-		break;
-	case (GPIOH_BASE):
-		GPIOH_REG_RESET();
-		break;
-	case (GPIOI_BASE):
-		GPIOI_REG_RESET();
-		break;
-	}
-}
-
-/*********************************************************************
  * @fn      	      -GPIO_ReadFromInputPin
  *
  * @brief             -REads value from specified pin

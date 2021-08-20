@@ -1,6 +1,9 @@
-/*
- * stm32f4xx_spi_driver.c
+/** @file STM32F4xx_SPI.h
+ * 
+ * @brief SPI drivers for STM32F4 MCUs
  *
+ * @par
+ * 
  *  Created on: Mar 25, 2021
  *      Author: milesosborne
  */
@@ -12,11 +15,11 @@ static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle);
 static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
 
 /*********************************************************************
- * @fn				- SPI_PeriClockControl
+ * @fn				- SPI_peripheral_clock_enable
  *
- * @brief			-
+ * @brief			- Enables the peripheral clock for the SPI interface
  *
- * @param[in]		-
+ * @param[in]		- pSPIx, Struct containing SPI interface and location of SPI registers
  * @param[in]		-
  * @param[in]		-
  *
@@ -24,37 +27,48 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
  *
  * @Note			-  none
  */
-void SPI_PeriClockControl(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
+void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
 {
-	if (Enable_Disable == ENABLE)
+	if (pSPIx == SPI1)
 	{
-		if (pSPIx == SPI1)
-		{
-			SPI1_PCLK_EN();
-		}
-		else if (pSPIx == SPI2)
-		{
-			SPI2_PCLK_EN();
-		}
-		else if (pSPIx == SPI3)
-		{
-			SPI3_PCLK_EN();
-		}
+		SPI1_PCLK_EN();
 	}
-	else
+	else if (pSPIx == SPI2)
 	{
-		if (pSPIx == SPI1)
-		{
-			SPI1_PCLK_DI();
-		}
-		else if (pSPIx == SPI2)
-		{
-			SPI2_PCLK_DI();
-		}
-		else if (pSPIx == SPI3)
-		{
-			SPI3_PCLK_DI();
-		}
+		SPI2_PCLK_EN();
+	}
+	else if (pSPIx == SPI3)
+	{
+		SPI3_PCLK_EN();
+	}
+}
+
+/*********************************************************************
+ * @fn				- SPI_peripheral_clock_disable
+ *
+ * @brief			- Disables the peripheral clock for the SPI interface
+ *
+ * @param[in]		- pSPIx, Struct containing SPI interface and location of SPI registers
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void SPI_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
+{
+	if (pSPIx == SPI1)
+	{
+		SPI1_PCLK_DI();
+	}
+	else if (pSPIx == SPI2)
+	{
+		SPI2_PCLK_DI();
+	}
+	else if (pSPIx == SPI3)
+	{
+		SPI3_PCLK_DI();
 	}
 }
 

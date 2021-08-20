@@ -28,36 +28,41 @@
  */
 void GPIO_clock_enable(GPIO_RegDef_t *pGPIOx)
 {
-	uint32_t address = (uint32_t)&pGPIOx;
-	switch (address)
+	if (pGPIOx == GPIOA)
 	{
-	case (GPIOA_BASE):
 		GPIOA_PCLK_EN();
-		break;
-	case (GPIOB_BASE):
+	}
+	else if (pGPIOx == GPIOB)
+	{
 		GPIOB_PCLK_EN();
-		break;
-	case (GPIOC_BASE):
+	}
+	else if (pGPIOx == GPIOC)
+	{
 		GPIOC_PCLK_EN();
-		break;
-	case (GPIOD_BASE):
+	}
+	else if (pGPIOx == GPIOD)
+	{
 		GPIOD_PCLK_EN();
-		break;
-	case (GPIOE_BASE):
+	}
+	else if (pGPIOx == GPIOE)
+	{
 		GPIOE_PCLK_EN();
-		break;
-	case (GPIOF_BASE):
+	}
+	else if (pGPIOx == GPIOF)
+	{
 		GPIOF_PCLK_EN();
-		break;
-	case (GPIOG_BASE):
+	}
+	else if (pGPIOx == GPIOG)
+	{
 		GPIOG_PCLK_EN();
-		break;
-	case (GPIOH_BASE):
+	}
+	else if (pGPIOx == GPIOH)
+	{
 		GPIOH_PCLK_EN();
-		break;
-	case (GPIOI_BASE):
+	}
+	else if (pGPIOx == GPIOI)
+	{
 		GPIOI_PCLK_EN();
-		break;
 	}
 }
 
@@ -76,36 +81,41 @@ void GPIO_clock_enable(GPIO_RegDef_t *pGPIOx)
  */
 void GPIO_clock_disable(GPIO_RegDef_t *pGPIOx)
 {
-	uint32_t address = (uint32_t)&pGPIOx;
-	switch (address)
+		if (pGPIOx == GPIOA)
 	{
-	case (GPIOA_BASE):
 		GPIOA_PCLK_DI();
-		break;
-	case (GPIOB_BASE):
+	}
+	else if (pGPIOx == GPIOB)
+	{
 		GPIOB_PCLK_DI();
-		break;
-	case (GPIOC_BASE):
+	}
+	else if (pGPIOx == GPIOC)
+	{
 		GPIOC_PCLK_DI();
-		break;
-	case (GPIOD_BASE):
+	}
+	else if (pGPIOx == GPIOD)
+	{
 		GPIOD_PCLK_DI();
-		break;
-	case (GPIOE_BASE):
+	}
+	else if (pGPIOx == GPIOE)
+	{
 		GPIOE_PCLK_DI();
-		break;
-	case (GPIOF_BASE):
+	}
+	else if (pGPIOx == GPIOF)
+	{
 		GPIOF_PCLK_DI();
-		break;
-	case (GPIOG_BASE):
+	}
+	else if (pGPIOx == GPIOG)
+	{
 		GPIOG_PCLK_DI();
-		break;
-	case (GPIOH_BASE):
+	}
+	else if (pGPIOx == GPIOH)
+	{
 		GPIOH_PCLK_DI();
-		break;
-	case (GPIOI_BASE):
+	}
+	else if (pGPIOx == GPIOI)
+	{
 		GPIOI_PCLK_DI();
-		break;
 	}
 }
 
@@ -124,36 +134,41 @@ void GPIO_clock_disable(GPIO_RegDef_t *pGPIOx)
  */
 void GPIO_reset(GPIO_RegDef_t *pGPIOx)
 {
-	uint32_t address = (uint32_t)&pGPIOx;
-	switch (address)
+		if (pGPIOx == GPIOA)
 	{
-	case (GPIOA_BASE):
-		GPIOA_REG_RESET();
-		break;
-	case (GPIOB_BASE):
-		GPIOB_REG_RESET();
-		break;
-	case (GPIOC_BASE):
-		GPIOC_REG_RESET();
-		break;
-	case (GPIOD_BASE):
-		GPIOD_REG_RESET();
-		break;
-	case (GPIOE_BASE):
-		GPIOE_REG_RESET();
-		break;
-	case (GPIOF_BASE):
-		GPIOF_REG_RESET();
-		break;
-	case (GPIOG_BASE):
-		GPIOG_REG_RESET();
-		break;
-	case (GPIOH_BASE):
-		GPIOH_REG_RESET();
-		break;
-	case (GPIOI_BASE):
-		GPIOI_REG_RESET();
-		break;
+		GPIOA_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOB)
+	{
+		GPIOB_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOC)
+	{
+		GPIOC_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOD)
+	{
+		GPIOD_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOE)
+	{
+		GPIOE_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOF)
+	{
+		GPIOF_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOG)
+	{
+		GPIOG_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOH)
+	{
+		GPIOH_PCLK_RESET();
+	}
+	else if (pGPIOx == GPIOI)
+	{
+		GPIOI_PCLK_RESET();
 	}
 }
 

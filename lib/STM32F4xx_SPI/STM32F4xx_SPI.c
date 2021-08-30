@@ -15,7 +15,7 @@ static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle);
 static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
 
 /*********************************************************************
- * @fn				- SPI_peripheral_clock_enable
+ * @fn				- spi_peripheral_clock_enable
  *
  * @brief			- Enables the peripheral clock for the SPI interface
  *
@@ -27,7 +27,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
  *
  * @Note			-  none
  */
-void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
+void spi_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
 {
 	if (pSPIx == SPI1)
 	{
@@ -44,7 +44,7 @@ void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
 }
 
 /*********************************************************************
- * @fn				- SPI_peripheral_clock_disable
+ * @fn				- spi_peripheral_clock_disable
  *
  * @brief			- Disables the peripheral clock for the SPI interface
  *
@@ -56,7 +56,7 @@ void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
  *
  * @Note			-  none
  */
-void SPI_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
+void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
 {
 	if (pSPIx == SPI1)
 	{
@@ -85,7 +85,7 @@ void SPI_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
  *
  * @Note			-  none
  */
-void SPI_Init(SPI_Handle_t *pSPIHandle)
+void spi_init(SPI_Handle_t *pSPIHandle)
 {
 	//Enable SPI Periheral clock
 	SPI_PeriClockControl(pSPIHandle->pSPIx, ENABLE);
@@ -131,6 +131,10 @@ void SPI_Init(SPI_Handle_t *pSPIHandle)
 	pSPIHandle->pSPIx->SPI_CR1 = tempreg;
 }
 
+/**
+ * NOTE: Is a deinit function needed?
+ */
+#if 0
 /*********************************************************************
  * @fn				-
  *
@@ -144,9 +148,10 @@ void SPI_Init(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void SPI_DeInit(SPI_RegDef_t *pSPIx)
+void spi_DeInit(SPI_RegDef_t *pSPIx)
 {
 }
+#endif
 
 /*********************************************************************
  * @fn				-
@@ -162,7 +167,7 @@ void SPI_DeInit(SPI_RegDef_t *pSPIx)
  * @Note			-  none
  */
 
-void SPI_TransmitData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
+void spi_transmit_data(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 {
 	//Transmit data while length is not 0
 	while (len > 0)
@@ -203,7 +208,7 @@ void SPI_TransmitData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
  * @Note			-  none
  */
 
-void SPI_RecieveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
+void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 {
 	while (len > 0)
 	{
@@ -275,6 +280,9 @@ uint8_t SPI_TransmitDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_
 
 	return state;
 }
+
+//NOTE: Revisit interrupt based api at later date
+#if 0 
 /*********************************************************************
  * @fn				-
  *
@@ -470,11 +478,12 @@ void SPI_IRQHandling(SPI_Handle_t *pSPIHandle)
 		spi_ovr_err_interrupt_handle(pSPIHandle);
 	}
 }
+#endif
 
 /*********************************************************************
- * @fn				-
+ * @fn				-spi_peripheral_enable
  *
- * @brief			-
+ * @brief			-Enables the SPI peripheral for data transmissions
  *
  * @param[in]		-
  * @param[in]		-
@@ -484,16 +493,27 @@ void SPI_IRQHandling(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
+void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
 {
-	if (Enable_Disable == ENABLE)
-	{
-		pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
-	}
-	else
-	{
-		pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
-	}
+	pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
+}
+
+/*********************************************************************
+ * @fn				-spi_peripheral_disable
+ *
+ * @brief			-Disables the SPI peripheral
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_peripheral_disable(SPI_RegDef_t *pSPIx)
+{
+	pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
 }
 
 /*********************************************************************
@@ -509,7 +529,7 @@ void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
  *
  * @Note			-  none
  */
-void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
+void spi_ssi_config(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
 {
 	if (Enable_Disable == ENABLE)
 	{
@@ -521,6 +541,10 @@ void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
 	}
 }
 
+/**
+ * Interrupt based api will be completed at a later datae
+ */
+#if 0
 /*********************************************************************
  * @fn				-
  *
@@ -627,9 +651,35 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle)
 	//2. Inform the application
 	SPI_ApplicationCallback(pSPIHandle, SPI_EVENT_OVR_ERR);
 }
+#endif
 
 /*********************************************************************
- * @fn				-
+ * @fn				-spi_get_flag_status
+ *
+ * @brief			-Obtains the status of SPI peripheral flags
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName)
+{
+	uint16_t tempreg = FlagName;
+	uint16_t SPI_SR = pSPIx->SPI_SR;
+	if(SPI_SR & tempreg)
+	{
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+/*********************************************************************
+ * @fn				-spi_clear_ovr_flag
  *
  * @brief			-
  *
@@ -641,7 +691,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void SPI_ClearOVRFlag(SPI_RegDef_t *pSPIx)
+void spi_clear_ovr_flag(SPI_RegDef_t *pSPIx)
 {
 	uint8_t temp;
 	temp = pSPIx->SPI_DR;
@@ -662,7 +712,7 @@ void SPI_ClearOVRFlag(SPI_RegDef_t *pSPIx)
  *
  * @Note			-  none
  */
-void SPI_CloseTransmission(SPI_Handle_t *pSPIHandle)
+void spi_close_transmission(SPI_Handle_t *pSPIHandle)
 {
 	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_TXEIE); //this prevents  interrupts from setting up the TXE flag
 	pSPIHandle->pTxBuffer = NULL;
@@ -683,7 +733,7 @@ void SPI_CloseTransmission(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void SPI_CloseReception(SPI_Handle_t *pSPIHandle)
+void spi_close_reception(SPI_Handle_t *pSPIHandle)
 {
 	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_RXNEIE); //Prevents interrupts from setting the RXNEIE flag
 	pSPIHandle->pRxBuffer = NULL;

@@ -130,13 +130,13 @@ typedef struct
  * Contains bit masking information for each flag
  * in the status register (SPI_SR)
  */
-#define SPI_RXNE_FLAG (1 << SPI_SR_RXNE)
-#define SPI_TXE_FLAG (1 << SPI_SR_TXE)
-#define SPI_UDR_FLAG (1 << SPI_SR_UDR)
-#define SPI_CRC_FLAG (1 << SPI_SR_CRC_ERR)
-#define SPI_MODF_FLAG (1 << SPI_SR_MODF)
-#define SPI_OVR_FLAG (1 << SPI_SR_OVR)
-#define SPI_BSY_FLAG (1 << SPI_SR_BSY)
+#define SPI_FLAG_RXNE (1 << SPI_SR_RXNE)	//Rx buffer not empty
+#define SPI_FLAG_TXE (1 << SPI_SR_TXE)		//Tx buffer empty 
+#define SPI_FLAG_UDR (1 << SPI_SR_UDR)		//Underrun flag
+#define SPI_FLAG_CRC (1 << SPI_SR_CRC_ERR)	//CRC error flag
+#define SPI_FLAG_MODF (1 << SPI_SR_MODF)	//Master mode fault
+#define SPI_FLAG_OVR (1 << SPI_SR_OVR)		//Overrun flag
+#define SPI_FLAG_BSY (1 << SPI_SR_BSY)		//BUSY flag (SPI is communicating)
 
 /*
  * Bit field definitions of SPI peripherals
@@ -187,23 +187,23 @@ typedef struct
 /*
  * Peripheral clock control
  */
-void SPI_peripheral_clock_enable(SPI_RegDef_t *pSPIx);
-void SPI_peripheral_clock_disable(SPI_RegDef_t *pSPIx);
+void spi_peripheral_clock_enable(SPI_RegDef_t *pSPIx);
+void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx);
 
 /*
  * Initialization / Deinitialization
  */
-void SPI_Init(SPI_Handle_t *pSPIHandle);
-void SPI_DeInit(SPI_RegDef_t *pSPIx);
+void spi_init(SPI_Handle_t *pSPIHandle);
 
 /*
  * Data send & receive
  */
 
 //blocking based api
-void SPI_TransmitData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len);
-void SPI_RecieveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len);
+void spi_transmit_data(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len);
+void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len);
 
+#if 0 
 //Interrupt based api
 uint8_t SPI_TransmitDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len);
 uint8_t SPI_RecieveDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t len);
@@ -214,16 +214,18 @@ uint8_t SPI_RecieveDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t
 void SPI_IRQInterruptConfig(uint8_t IRQNUmber, uint8_t Enable_Disable);
 void SPI_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 void SPI_IRQHandling(SPI_Handle_t *pHandle);
+#endif
 
 /*
  * Other peripheral control APIs
  */
-uint8_t SPI_GetFlagStatus(SPI_RegDef_t *pSPIx, uint32_t FlagName);
-void SPI_PeripheralControl(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable);
-void SPI_SSIConfig(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable);
-void SPI_ClearOVRFlag(SPI_RegDef_t *pSPIx);
-void SPI_CloseTransmission(SPI_Handle_t *pSPIHandle);
-void SPI_CloseReception(SPI_Handle_t *pSPIHandle);
+uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName); // NOTE: Not implemeted yet!
+void spi_peripheral_enable(SPI_RegDef_t *pSPIx);
+void spi_peripheral_disable(SPI_RegDef_t *pSPIx);
+void spi_ssi_config(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable);
+void spi_clear_ovr_flag(SPI_RegDef_t *pSPIx);
+void spi_close_transmission(SPI_Handle_t *pSPIHandle); //NOTE: How do close transmission and close reception differ?
+void spi_close_reception(SPI_Handle_t *pSPIHandle);
 
 /*
  * SPI_ApplicationEventCallback

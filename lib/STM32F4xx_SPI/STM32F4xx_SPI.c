@@ -10,9 +10,11 @@
 
 #include "STM32F4xx_SPI.h"
 
+#if 0
 static void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle);
 static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle);
 static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle);
+#endif
 
 /*********************************************************************
  * @fn				- spi_peripheral_clock_enable
@@ -88,7 +90,7 @@ void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
 void spi_init(SPI_Handle_t *pSPIHandle)
 {
 	//Enable SPI Periheral clock
-	SPI_PeriClockControl(pSPIHandle->pSPIx, ENABLE);
+	spi_peripheral_clock_enable(pSPIHandle->pSPIx);
 
 	//Configure SPI_CR1 register
 	uint32_t tempreg = 0;
@@ -114,6 +116,11 @@ void spi_init(SPI_Handle_t *pSPIHandle)
 		//RXONLY (bit 10) must be set
 		tempreg |= (1 << 10);
 	}
+
+	//3. Configure the spi serial clock speed (baud rate)
+	tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
+
+	//4. Configure the DFF
 
 	//3. Configure the spi serial clock speed (baud rate)
 	tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
@@ -173,7 +180,7 @@ void spi_transmit_data(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 	while (len > 0)
 	{
 		//Wait until the Tx buffer is empty before proceeding
-		while (!SPI_GetFlagStatus(pSPIx, SPI_TXE_FLAG))
+		while (!spi_get_flag_status(pSPIx, SPI_FLAG_TXE))
 		{
 			//Deterine if the DFF is 16bit (1) or 8bit (0)
 			if ((pSPIx->SPI_CR1) & (1 << SPI_CR1_DFF))
@@ -213,7 +220,7 @@ void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 	while (len > 0)
 	{
 		//1. wait until RXNE flag is set
-		while (SPI_GetFlagStatus(pSPIx, SPI_RXNE_FLAG))
+		while (spi_get_flag_status(pSPIx, SPI_FLAG_RXNE))
 		{
 			if (pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
 			{
@@ -235,6 +242,8 @@ void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 	}
 }
 
+//NOTE: Revisit interrupt based api at later date
+#if 0 
 /*********************************************************************
  * @fn				-
  *
@@ -281,8 +290,7 @@ uint8_t SPI_TransmitDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_
 	return state;
 }
 
-//NOTE: Revisit interrupt based api at later date
-#if 0 
+
 /*********************************************************************
  * @fn				-
  *
@@ -328,27 +336,6 @@ uint8_t SPI_RecieveDataIT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t
 	return state;
 }
 
-/*********************************************************************
- * @fn				-
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-uint8_t SPI_GetFlagStatus(SPI_RegDef_t *pSPIx, uint32_t FlagName)
-{
-	if (pSPIx->SPI_SR & FlagName)
-	{
-		return FLAG_SET;
-	}
-	return FLAG_RESET;
-}
 
 /*********************************************************************
  * @fn      		  - SPI_IRQInterruptConfig
@@ -672,9 +659,9 @@ uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName)
 	uint16_t SPI_SR = pSPIx->SPI_SR;
 	if(SPI_SR & tempreg)
 	{
-		return 1;
+		return FLAG_SET;
 	}else{
-		return 0;
+		return FLAG_RESET;
 	}
 }
 

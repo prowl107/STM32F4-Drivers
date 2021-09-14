@@ -22,6 +22,7 @@ typedef struct
 	uint8_t SPI_DeviceMode; //Master or Slave modes
 	uint8_t SPI_BusConfig;	//Full duplex, Half duplex, Simplex configuration
 	uint8_t SPI_DFF;		//Data frame format
+	uint8_t SPI_LSB_FIRST; 	//Frame format (LSM/MSB transmitted first)
 	uint8_t SPI_CPHA;		//Clock phase
 	uint8_t SPI_CPOL;		//Clock polarity
 	uint8_t SPI_SSM;		//Software slave management
@@ -79,6 +80,12 @@ typedef struct
  */
 #define SPI_DFF_8BITS 0	 //Sets data frame format to 8bits (default)
 #define SPI_DFF_16BITS 1 //Sets data frame format to 16bits
+
+/*
+ * @SPI_LSBFIRST
+ */
+#define SPI_LSB_FIRST_MSB 0 //MSB transmitted first
+#define SPI_LSB_FIRST_LSB 1 //LSB transmitted first
 
 /*
  * @SPI_CPHA

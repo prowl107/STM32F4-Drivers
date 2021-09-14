@@ -75,9 +75,9 @@ void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
 }
 
 /*********************************************************************
- * @fn				-
+ * @fn				-spi_init
  *
- * @brief			-
+ * @brief			-Initializes and calls configuration functions for SPI peripherals
  *
  * @param[in]		-
  * @param[in]		-
@@ -95,47 +95,153 @@ void spi_init(SPI_Handle_t *pSPIHandle)
 	//Configure SPI_CR1 register
 	uint32_t tempreg = 0;
 
-	//1. configure the device mode (slave or master)
-	tempreg |= pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR;
-
-	//2. Configure the bust config
-	if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_FD)
+	if (pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_SLAVE)
 	{
-		//bidi mode (bit 14) should be cleared
-		tempreg &= ~(1 << 15);
+		spi_slave_config(pSPIHandle);
 	}
-	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_HD)
+	else
 	{
-		//bidi mode should be set
-		tempreg |= (1 << 15);
-	}
-	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_SIMPLEX_RXONLY)
-	{
-		//bidi mode should be cleared
-		tempreg &= ~(1 << 15);
-		//RXONLY (bit 10) must be set
-		tempreg |= (1 << 10);
+		spi_master_config(pSPIHandle);
 	}
 
-	//3. Configure the spi serial clock speed (baud rate)
-	tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
+	spi_peripheral_enable(pSPIHandle->pSPIx);
 
-	//4. Configure the DFF
+	return;
 
-	//3. Configure the spi serial clock speed (baud rate)
-	tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
+	// //1. configure the device mode (slave or master)
+	// tempreg |= pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR;
 
-	//4. Configure the DFF
-	tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
+	// //2. Configure the bus config
+	// if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_FD)
+	// {
+	// 	//bidi mode (bit 14) should be cleared
+	// 	tempreg &= ~(1 << 15);
+	// }
+	// else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_HD)
+	// {
+	// 	//bidi mode should be set
+	// 	tempreg |= (1 << 15);
+	// }
+	// else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_SIMPLEX_RXONLY)
+	// {
+	// 	//bidi mode should be cleared
+	// 	tempreg &= ~(1 << 15);
+	// 	//RXONLY (bit 10) must be set
+	// 	tempreg |= (1 << 10);
+	// }
 
-	//5. Configure the CPOL
-	tempreg |= pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL;
+	// //3. Configure the spi serial clock speed (baud rate)
+	// tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
 
-	//6. Configure the CPHA
-	tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
+	// //4. Configure the DFF
 
-	//Save configuration to SPI_CR1 register
-	pSPIHandle->pSPIx->SPI_CR1 = tempreg;
+	// //3. Configure the spi serial clock speed (baud rate)
+	// tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
+
+	// //4. Configure the DFF
+	// tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
+
+	// //5. Configure the CPOL
+	// tempreg |= pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL;
+
+	// //6. Configure the CPHA
+	// tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
+
+	// //Save configuration to SPI_CR1 register
+	// pSPIHandle->pSPIx->SPI_CR1 = tempreg;
+}
+
+/*********************************************************************
+ * @fn				-spi_master_config
+ *
+ * @brief			-Configures the SPI peripheral for operation in master mode
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_master_config(SPI_Handle_t *pSPIHandle)
+{
+	/** Procedure
+	 * 1. Select the BR[2.0] bits to define serial clock baud rate
+	 * 2. Select CPOL and CPHA bits to define one of the four relationships between the data transfer and serial clock
+	 * 3. Set the DFF bit to define 8 or 16bit data frame format
+	 * 4. Configure the LSBFIRST bit in SPI_CR1 to define frame format (NOT REQUIRED WHEN TI MODE IS SELECTED)
+	 * 5. Configure slave select management
+	 * 6. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
+	 * 7. Set the MSTR bit (Will only if the NSS pin is connected to a high-level signal)
+	 */
+
+	uint16_t tempreg1 = 0; //For SPI_CR1
+	uint16_t tempreg2 = 0; //For SPI_CR2
+
+	//1. Select the BR[2.0] bits to define serial clock baud rate
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR);
+
+	//2. Select CPOL and CPHA bits to define one of the four relationships between the data transfer and serial clock
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL);
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA);
+
+	//3. Set the DFF bit to define 8 or 16bit data frame format
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF);
+
+	//4. Configure the LSBFIRST bit in SPI_CR1 to define frame format (NOT REQUIRED WHEN TI MODE IS SELECTED)
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_LSB_FIRST << SPI_CR1_LSB_FIRST);
+
+	//5. Configure slave select management
+	tempreg1 |= (pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM);
+	/* NOTE: If the NSS pin is required in input mode, in hardware mode, connect the NSS pin to a
+	 * 		high-level signal during the complete byte transmit sequence. In NSS software mode,
+	 * 		set the SSM and SSI bits in the SPI_CR1 register.
+	 * 
+	 * NOTE: If the NSS pin is required in output
+	 * 		mode, the SSOE bit only should be set. This step is not required when the TI mode is selected.
+	 * 
+	 * TODO: Configure SPI_CR2_SSOE according to step 5 Notes
+	 */
+
+	//6. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
+	tempreg2 |= (1 << SPI_CR2_FRF);
+
+	//7. Set the MSTR bit
+	tempreg1 |= (1 << SPI_CR1_MSTR);
+
+	// Write values into registers
+	pSPIHandle->pSPIx->SPI_CR1 = tempreg1;
+	pSPIHandle->pSPIx->SPI_CR2 = tempreg2;
+
+	return;
+}
+
+/*********************************************************************
+ * @fn				-spi_slave_config
+ *
+ * @brief			-Configures the SPI peripheral for operation in slave mode
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_slave_config(SPI_Handle_t *pSPIHandle)
+{
+	/** Procedure
+	 * 1. Set the DFF bit to define 8bit or 16bit data frame format
+	 * 2. Select the CPOL and CPHA bits to define one of the four relationships between the data transfer and the serial clock
+	 * 3. Set frame format (MSB-first or LSB-first) to the same as the master device
+	 * 4. If NSS software mode, set the SSM bit and clear the SSI bit in the SPI_CR1 register
+	 * 5. Set the FRF bit in the SPI_CR2 register to select the TI mode protocol for serial communciations
+	 * 6. Clear the MSTR bit and set the SPE bit to assign the pins to alternate function
+	 */
+
+	return;
 }
 
 /**
@@ -483,6 +589,7 @@ void SPI_IRQHandling(SPI_Handle_t *pSPIHandle)
 void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
 {
 	pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
+	return;
 }
 
 /*********************************************************************
@@ -501,6 +608,7 @@ void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
 void spi_peripheral_disable(SPI_RegDef_t *pSPIx)
 {
 	pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
+	return;
 }
 
 /*********************************************************************
@@ -657,10 +765,12 @@ uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName)
 {
 	uint16_t tempreg = FlagName;
 	uint16_t SPI_SR = pSPIx->SPI_SR;
-	if(SPI_SR & tempreg)
+	if (SPI_SR & tempreg)
 	{
 		return FLAG_SET;
-	}else{
+	}
+	else
+	{
 		return FLAG_RESET;
 	}
 }

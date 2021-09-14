@@ -95,60 +95,18 @@ void spi_init(SPI_Handle_t *pSPIHandle)
 	//Configure SPI_CR1 register
 	uint32_t tempreg = 0;
 
-	if (pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_SLAVE)
+	if (pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_MASTER)
 	{
-		spi_slave_config(pSPIHandle);
+		spi_master_config(pSPIHandle);
 	}
 	else
 	{
-		spi_master_config(pSPIHandle);
+		spi_slave_config(pSPIHandle);
 	}
 
 	spi_peripheral_enable(pSPIHandle->pSPIx);
 
 	return;
-
-	// //1. configure the device mode (slave or master)
-	// tempreg |= pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR;
-
-	// //2. Configure the bus config
-	// if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_FD)
-	// {
-	// 	//bidi mode (bit 14) should be cleared
-	// 	tempreg &= ~(1 << 15);
-	// }
-	// else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_HD)
-	// {
-	// 	//bidi mode should be set
-	// 	tempreg |= (1 << 15);
-	// }
-	// else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_CONFIG_SIMPLEX_RXONLY)
-	// {
-	// 	//bidi mode should be cleared
-	// 	tempreg &= ~(1 << 15);
-	// 	//RXONLY (bit 10) must be set
-	// 	tempreg |= (1 << 10);
-	// }
-
-	// //3. Configure the spi serial clock speed (baud rate)
-	// tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
-
-	// //4. Configure the DFF
-
-	// //3. Configure the spi serial clock speed (baud rate)
-	// tempreg |= pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR;
-
-	// //4. Configure the DFF
-	// tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
-
-	// //5. Configure the CPOL
-	// tempreg |= pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL;
-
-	// //6. Configure the CPHA
-	// tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
-
-	// //Save configuration to SPI_CR1 register
-	// pSPIHandle->pSPIx->SPI_CR1 = tempreg;
 }
 
 /*********************************************************************
@@ -166,33 +124,28 @@ void spi_init(SPI_Handle_t *pSPIHandle)
  */
 void spi_master_config(SPI_Handle_t *pSPIHandle)
 {
-	/** Procedure
-	 * 1. Select the BR[2.0] bits to define serial clock baud rate
-	 * 2. Select CPOL and CPHA bits to define one of the four relationships between the data transfer and serial clock
-	 * 3. Set the DFF bit to define 8 or 16bit data frame format
-	 * 4. Configure the LSBFIRST bit in SPI_CR1 to define frame format (NOT REQUIRED WHEN TI MODE IS SELECTED)
-	 * 5. Configure slave select management
-	 * 6. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
-	 * 7. Set the MSTR bit (Will only if the NSS pin is connected to a high-level signal)
-	 */
-
 	uint16_t tempreg1 = 0; //For SPI_CR1
 	uint16_t tempreg2 = 0; //For SPI_CR2
 
-	//1. Select the BR[2.0] bits to define serial clock baud rate
+	//1. Set the MSTR bit
+	tempreg1 |= (1 << SPI_CR1_MSTR);
+
+	//2. Configure the SPI serial clock speed (baud rate)
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR);
 
-	//2. Select CPOL and CPHA bits to define one of the four relationships between the data transfer and serial clock
+	//3. Select CPOL and CPHA bits
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL);
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA);
 
-	//3. Set the DFF bit to define 8 or 16bit data frame format
+	//4. Set the DFF bit to define 8 or 16bit data frame format
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF);
 
-	//4. Configure the LSBFIRST bit in SPI_CR1 to define frame format (NOT REQUIRED WHEN TI MODE IS SELECTED)
+#if 0
+	//5. Configure the LSBFIRST bit (NOT REQUIRED WHEN TI MODE IS SELECTED)
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_LSB_FIRST << SPI_CR1_LSB_FIRST);
+#endif
 
-	//5. Configure slave select management
+	//6. Configure slave select management (SSM)
 	tempreg1 |= (pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM);
 	/* NOTE: If the NSS pin is required in input mode, in hardware mode, connect the NSS pin to a
 	 * 		high-level signal during the complete byte transmit sequence. In NSS software mode,
@@ -204,13 +157,29 @@ void spi_master_config(SPI_Handle_t *pSPIHandle)
 	 * TODO: Configure SPI_CR2_SSOE according to step 5 Notes
 	 */
 
-	//6. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
+	//7. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
 	tempreg2 |= (1 << SPI_CR2_FRF);
 
-	//7. Set the MSTR bit
-	tempreg1 |= (1 << SPI_CR1_MSTR);
+	//8. Configure the bus config
+	if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_FULL_DUPLEX)
+	{
+		//bidi mode (bit 15) should be cleared
+		tempreg1 &= ~(1 << 15);
+	}
+	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_HALF_DUPLEX)
+	{
+		//bidi mode should be set
+		tempreg1 |= (1 << 15);
+	}
+	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_SIMPLEX)
+	{
+		//bidi mode should be cleared
+		tempreg1 &= ~(1 << 15);
+		//RXONLY (bit 10) must be set
+		tempreg1 |= (1 << 10);
+	}
 
-	// Write values into registers
+	// Save configurations
 	pSPIHandle->pSPIx->SPI_CR1 = tempreg1;
 	pSPIHandle->pSPIx->SPI_CR2 = tempreg2;
 
@@ -232,7 +201,7 @@ void spi_master_config(SPI_Handle_t *pSPIHandle)
  */
 void spi_slave_config(SPI_Handle_t *pSPIHandle)
 {
-	/** Procedure
+	/** Procedure (TODO)
 	 * 1. Set the DFF bit to define 8bit or 16bit data frame format
 	 * 2. Select the CPOL and CPHA bits to define one of the four relationships between the data transfer and the serial clock
 	 * 3. Set frame format (MSB-first or LSB-first) to the same as the master device
@@ -243,28 +212,6 @@ void spi_slave_config(SPI_Handle_t *pSPIHandle)
 
 	return;
 }
-
-/**
- * NOTE: Is a deinit function needed?
- */
-#if 0
-/*********************************************************************
- * @fn				-
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_DeInit(SPI_RegDef_t *pSPIx)
-{
-}
-#endif
 
 /*********************************************************************
  * @fn				-
@@ -308,7 +255,7 @@ void spi_transmit_data(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 }
 
 /*********************************************************************
- * @fn				-
+ * @fn				-spi_recieve_data
  *
  * @brief			-
  *
@@ -348,8 +295,165 @@ void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 	}
 }
 
-//NOTE: Revisit interrupt based api at later date
-#if 0 
+/*********************************************************************
+ * @fn				-spi_peripheral_enable
+ *
+ * @brief			-Enables the SPI peripheral for data transmissions
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
+{
+	pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
+	return;
+}
+
+/*********************************************************************
+ * @fn				-spi_peripheral_disable
+ *
+ * @brief			-Disables the SPI peripheral
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_peripheral_disable(SPI_RegDef_t *pSPIx)
+{
+	pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
+	return;
+}
+
+/*********************************************************************
+ * @fn				-spi_ssi_config
+ *
+ * @brief			-
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  This function only has effect when the SPI_CR1_SSM bit is set
+ */
+void spi_ssi_config(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
+{
+	if (Enable_Disable == ENABLE)
+	{
+		pSPIx->SPI_CR1 |= (1 << SPI_CR1_SSI);
+	}
+	else
+	{
+		pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SSI);
+	}
+}
+
+/*********************************************************************
+ * @fn				-spi_get_flag_status
+ *
+ * @brief			-Obtains the status of SPI peripheral flags
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName)
+{
+	uint16_t tempreg = FlagName;
+	uint16_t SPI_SR = pSPIx->SPI_SR;
+	if (SPI_SR & tempreg)
+	{
+		return FLAG_SET;
+	}
+	else
+	{
+		return FLAG_RESET;
+	}
+}
+
+/*********************************************************************
+ * @fn				-spi_clear_ovr_flag
+ *
+ * @brief			-
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_clear_ovr_flag(SPI_RegDef_t *pSPIx)
+{
+	uint8_t temp;
+	temp = pSPIx->SPI_DR;
+	temp = pSPIx->SPI_SR;
+	(void)temp;
+}
+
+/*********************************************************************
+ * @fn				-SPI_CloseTransmission
+ *
+ * @brief			-
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_close_transmission(SPI_Handle_t *pSPIHandle)
+{
+	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_TXEIE); //this prevents  interrupts from setting up the TXE flag
+	pSPIHandle->pTxBuffer = NULL;
+	pSPIHandle->TxLen = 0;
+	pSPIHandle->TxState = SPI_READY;
+}
+
+/*********************************************************************
+ * @fn				-SPI_CloseReception
+ *
+ * @brief			-
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_close_reception(SPI_Handle_t *pSPIHandle)
+{
+	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_RXNEIE); //Prevents interrupts from setting the RXNEIE flag
+	pSPIHandle->pRxBuffer = NULL;
+	pSPIHandle->RxLen = 0;
+	pSPIHandle->RxState = SPI_READY;
+}
+
+/**
+ * SPI Interrupt Based API
+ * TODO: Revisit interrupt based api at later date
+ */
+
+#if 0
 /*********************************************************************
  * @fn				-
  *
@@ -571,70 +675,7 @@ void SPI_IRQHandling(SPI_Handle_t *pSPIHandle)
 		spi_ovr_err_interrupt_handle(pSPIHandle);
 	}
 }
-#endif
 
-/*********************************************************************
- * @fn				-spi_peripheral_enable
- *
- * @brief			-Enables the SPI peripheral for data transmissions
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
-{
-	pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
-	return;
-}
-
-/*********************************************************************
- * @fn				-spi_peripheral_disable
- *
- * @brief			-Disables the SPI peripheral
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_peripheral_disable(SPI_RegDef_t *pSPIx)
-{
-	pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
-	return;
-}
-
-/*********************************************************************
- * @fn				-
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_ssi_config(SPI_RegDef_t *pSPIx, uint8_t Enable_Disable)
-{
-	if (Enable_Disable == ENABLE)
-	{
-		pSPIx->SPI_CR1 |= (1 << SPI_CR1_SSI);
-	}
-	else
-	{
-		pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SSI);
-	}
-}
 
 /**
  * Interrupt based api will be completed at a later datae
@@ -749,96 +790,6 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pSPIHandle)
 #endif
 
 /*********************************************************************
- * @fn				-spi_get_flag_status
- *
- * @brief			-Obtains the status of SPI peripheral flags
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-uint8_t spi_get_flag_status(SPI_RegDef_t *pSPIx, uint16_t FlagName)
-{
-	uint16_t tempreg = FlagName;
-	uint16_t SPI_SR = pSPIx->SPI_SR;
-	if (SPI_SR & tempreg)
-	{
-		return FLAG_SET;
-	}
-	else
-	{
-		return FLAG_RESET;
-	}
-}
-
-/*********************************************************************
- * @fn				-spi_clear_ovr_flag
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_clear_ovr_flag(SPI_RegDef_t *pSPIx)
-{
-	uint8_t temp;
-	temp = pSPIx->SPI_DR;
-	temp = pSPIx->SPI_SR;
-	(void)temp;
-}
-
-/*********************************************************************
- * @fn				-SPI_CloseTransmission
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_close_transmission(SPI_Handle_t *pSPIHandle)
-{
-	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_TXEIE); //this prevents  interrupts from setting up the TXE flag
-	pSPIHandle->pTxBuffer = NULL;
-	pSPIHandle->TxLen = 0;
-	pSPIHandle->TxState = SPI_READY;
-}
-
-/*********************************************************************
- * @fn				-SPI_CloseReception
- *
- * @brief			-
- *
- * @param[in]		-
- * @param[in]		-
- * @param[in]		-
- *
- * @return			-  none
- *
- * @Note			-  none
- */
-void spi_close_reception(SPI_Handle_t *pSPIHandle)
-{
-	pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_RXNEIE); //Prevents interrupts from setting the RXNEIE flag
-	pSPIHandle->pRxBuffer = NULL;
-	pSPIHandle->RxLen = 0;
-	pSPIHandle->RxState = SPI_READY;
-}
-
-/*********************************************************************
  * @fn				-SPI_ApplicationCallback
  *
  * @brief			-
@@ -852,3 +803,5 @@ void spi_close_reception(SPI_Handle_t *pSPIHandle)
  * @Note			-  This is a weak implementation, the application may override this function
  */
 __attribute__((weak)) void SPI_ApplicationCallback(SPI_Handle_t *pSPIHandle, uint8_t handleEvent) {}
+
+#endif

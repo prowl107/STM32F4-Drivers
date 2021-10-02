@@ -1,11 +1,13 @@
 /** @file STM32F4xx_SPI.h
  * 
  * @brief SPI drivers for STM32F4 MCUs
+ * 
+ * @author Miles Osborne
  *
  * @par
  * 
  *  Created on: Mar 25, 2021
- *      Author: milesosborne
+ *  Last Updated: Oct 2, 2021
  */
 
 #ifndef INC_STM32F4XX_SPI_DRIVER_H_
@@ -22,10 +24,11 @@ typedef struct
 	uint8_t SPI_DeviceMode; //Master or Slave modes
 	uint8_t SPI_BusConfig;	//Full duplex, Half duplex, Simplex configuration
 	uint8_t SPI_DFF;		//Data frame format
-	uint8_t SPI_LSB_FIRST; 	//Frame format (LSM/MSB transmitted first)
+	uint8_t SPI_LSB_FIRST;	//Frame format (LSM/MSB transmitted first)
 	uint8_t SPI_CPHA;		//Clock phase
 	uint8_t SPI_CPOL;		//Clock polarity
 	uint8_t SPI_SSM;		//Software slave management
+	uint8_t SPI_NSS;		//Hardware slave management (NOTE: Only use if SPI_SSM is disabled)
 	uint8_t SPI_Speed;		//Sets baud rate min prescaler
 } SPI_Config_t;
 
@@ -71,9 +74,9 @@ typedef struct
 /*
  * @SPI_BusConfig
  */
-#define SPI_BUS_FULL_DUPLEX  1				//Full duplex
-#define SPI_BUS_HALF_DUPLEX 2				//Half duplex
-#define SPI_BUS_SIMPLEX 3 					//Simplex (recieve only)
+#define SPI_BUS_FULL_DUPLEX 1 //Full duplex
+#define SPI_BUS_HALF_DUPLEX 2 //Half duplex
+#define SPI_BUS_SIMPLEX 3	  //Simplex (recieve only)
 
 /*
  * @SPI_DFF
@@ -104,6 +107,8 @@ typedef struct
  */
 #define SPI_SSM_DI 0 //SPI Software slave management disabled, Hardware management enabled
 #define SPI_SSM_EN 1 //SPI Software slave management enable
+#define SPI_NSS_EN 1 //NSS output enable
+#define SPI_NSS_DI 0 //NSS output disable
 
 /*
  * @SPI_SclkSpeed
@@ -137,52 +142,52 @@ typedef struct
  * Contains bit masking information for each flag
  * in the status register (SPI_SR)
  */
-#define SPI_FLAG_RXNE (1 << SPI_SR_RXNE)	//Rx buffer not empty
-#define SPI_FLAG_TXE (1 << SPI_SR_TXE)		//Tx buffer empty 
-#define SPI_FLAG_UDR (1 << SPI_SR_UDR)		//Underrun flag
-#define SPI_FLAG_CRC (1 << SPI_SR_CRC_ERR)	//CRC error flag
-#define SPI_FLAG_MODF (1 << SPI_SR_MODF)	//Master mode fault
-#define SPI_FLAG_OVR (1 << SPI_SR_OVR)		//Overrun flag
-#define SPI_FLAG_BSY (1 << SPI_SR_BSY)		//BUSY flag (SPI is communicating)
+#define SPI_FLAG_RXNE (1 << SPI_SR_RXNE)   //Rx buffer not empty
+#define SPI_FLAG_TXE (1 << SPI_SR_TXE)	   //Tx buffer empty
+#define SPI_FLAG_UDR (1 << SPI_SR_UDR)	   //Underrun flag
+#define SPI_FLAG_CRC (1 << SPI_SR_CRC_ERR) //CRC error flag
+#define SPI_FLAG_MODF (1 << SPI_SR_MODF)   //Master mode fault
+#define SPI_FLAG_OVR (1 << SPI_SR_OVR)	   //Overrun flag
+#define SPI_FLAG_BSY (1 << SPI_SR_BSY)	   //BUSY flag (SPI is communicating)
 
 /*
  * Bit field definitions of SPI peripherals
  */
 //SPI control register 1 (SPI_CR1)
-#define SPI_CR1_CPHA 		0	//Clock phase
-#define SPI_CR1_CPOL 		1	//Clock polarity
-#define SPI_CR1_MSTR 		2	//Master selection
-#define SPI_CR1_BR			3	//Baud rate control
-#define SPI_CR1_SPE			6	//SPI enable
-#define SPI_CR1_LSB_FIRST	7	//Frame format
-#define SPI_CR1_SSI			8	//Internal slave select
-#define SPI_CR1_SSM			9	//Software slave management
-#define SPI_CR1_RXONLY		10	//Receive only
-#define	SPI_CR1_DFF			11	//Data frame format
-#define	SPI_CRC_NEXT		12	//CRC transfer next
-#define	SPI_CR1_CRC_EN		13	//Hardware CRC calculation enable
-#define SPI_CR1_BIDI_OE		14	//Output enable in bidirectional mode
-#define SPI_CR1_BIDI_MODE	15	//Biderectional data mode enable
+#define SPI_CR1_CPHA 0		 //Clock phase
+#define SPI_CR1_CPOL 1		 //Clock polarity
+#define SPI_CR1_MSTR 2		 //Master selection
+#define SPI_CR1_BR 3		 //Baud rate control
+#define SPI_CR1_SPE 6		 //SPI enable
+#define SPI_CR1_LSB_FIRST 7	 //Frame format
+#define SPI_CR1_SSI 8		 //Internal slave select
+#define SPI_CR1_SSM 9		 //Software slave management
+#define SPI_CR1_RXONLY 10	 //Receive only
+#define SPI_CR1_DFF 11		 //Data frame format
+#define SPI_CRC_NEXT 12		 //CRC transfer next
+#define SPI_CR1_CRC_EN 13	 //Hardware CRC calculation enable
+#define SPI_CR1_BIDI_OE 14	 //Output enable in bidirectional mode
+#define SPI_CR1_BIDI_MODE 15 //Biderectional data mode enable
 
 //SPI control register 2 (SPI_CR2)
-#define SPI_CR2_RXDMAEN		0	//Rx buffed DMA enable
-#define SPI_CR2_TXDMAEN		1	//Tx buffer DMA enable
-#define SPI_CR2_SSOE		2	//SS outpute enable
-#define SPI_CR2_FRF			4	//Frame formate
-#define SPI_CR2_ERRIE		5	//Error interrupt enable
-#define SPI_CR2_RXNEIE		6	//RX bufer not empty interrupt enable
-#define SPI_CR2_TXEIE		7	//Tx buffer empty interrupt enable
+#define SPI_CR2_RXDMAEN 0 //Rx buffed DMA enable
+#define SPI_CR2_TXDMAEN 1 //Tx buffer DMA enable
+#define SPI_CR2_SSOE 2	  //SS outpute enable
+#define SPI_CR2_FRF 4	  //Frame formate
+#define SPI_CR2_ERRIE 5	  //Error interrupt enable
+#define SPI_CR2_RXNEIE 6  //RX bufer not empty interrupt enable
+#define SPI_CR2_TXEIE 7	  //Tx buffer empty interrupt enable
 
 //SPI status register (SPI_SR)
-#define SPI_SR_RXNE			0	//Receive buffer not empty
-#define SPI_SR_TXE			1	//Transmit buffer empty
-#define SPI_SR_CHSIDE		2	//Channel side
-#define SPI_SR_UDR			3	//Underrun flag
-#define SPI_SR_CRC_ERR		4	//CRC error flag
-#define SPI_SR_MODF			5	//Mode fault
-#define SPI_SR_OVR			6	//Overrun flag
-#define SPI_SR_BSY			7	//Busy flag
-#define SPI_SR_FRE			8	//Frame format error
+#define SPI_SR_RXNE 0	 //Receive buffer not empty
+#define SPI_SR_TXE 1	 //Transmit buffer empty
+#define SPI_SR_CHSIDE 2	 //Channel side
+#define SPI_SR_UDR 3	 //Underrun flag
+#define SPI_SR_CRC_ERR 4 //CRC error flag
+#define SPI_SR_MODF 5	 //Mode fault
+#define SPI_SR_OVR 6	 //Overrun flag
+#define SPI_SR_BSY 7	 //Busy flag
+#define SPI_SR_FRE 8	 //Frame format error
 
 #define SPI1 ((SPI_RegDef_t *)SPI1_BASE)
 #define SPI2 ((SPI_RegDef_t *)SPI2_BASE)
@@ -201,6 +206,11 @@ void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx);
  * Initialization / Deinitialization
  */
 void spi_init(SPI_Handle_t *pSPIHandle);
+void spi_config(SPI_Handle_t *pSPIHandle);
+void spi_set_simplex_mode(SPI_RegDef_t *pSPIx);
+void spi_set_half_duplex_mode(SPI_RegDef_t *pSPIx);
+void spi_set_full_duplex_mode(SPI_RegDef_t *pSPIx);
+void spi_slave_select_config(SPI_Handle_t *pSPIHandle);
 
 /*
  * Data send & receive

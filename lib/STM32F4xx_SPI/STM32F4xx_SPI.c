@@ -1,15 +1,21 @@
 /** @file STM32F4xx_SPI.h
  * 
  * @brief SPI drivers for STM32F4 MCUs
+ * 
+ * @author Miles Osborne
  *
  * @par
  * 
  *  Created on: Mar 25, 2021
- *      Author: milesosborne
+ *  Last Updated: Oct 2, 2021
  */
 
 #include "STM32F4xx_SPI.h"
 
+/**
+ * SPI Interrupt Based API
+ * TODO: Revisit interrupt based api at later date
+ */
 #if 0
 static void spi_txe_interrupt_handle(SPI_Handle_t *pSPIHandle);
 static void spi_rxne_interrupt_handle(SPI_Handle_t *pSPIHandle);
@@ -34,14 +40,20 @@ void spi_peripheral_clock_enable(SPI_RegDef_t *pSPIx)
 	if (pSPIx == SPI1)
 	{
 		SPI1_PCLK_EN();
+		RCC->APB2RSTR |= (1 << 12);
+		RCC->APB2RSTR &= ~(1 << 12);
 	}
 	else if (pSPIx == SPI2)
 	{
 		SPI2_PCLK_EN();
+		RCC->APB1RSTR |= (1 << 14);
+		RCC->APB1RSTR &= ~(1 << 14);
 	}
 	else if (pSPIx == SPI3)
 	{
 		SPI3_PCLK_EN();
+		RCC->APB1RSTR |= (1 << 15);
+		RCC->APB1RSTR &= ~(1 << 15);
 	}
 }
 
@@ -79,7 +91,7 @@ void spi_peripheral_clock_disable(SPI_RegDef_t *pSPIx)
  *
  * @brief			-Initializes and calls configuration functions for SPI peripherals
  *
- * @param[in]		-
+ * @param[in]		- pSPIHandle, Struct containing user defined settings of SPI peripheral
  * @param[in]		-
  * @param[in]		-
  *
@@ -92,21 +104,11 @@ void spi_init(SPI_Handle_t *pSPIHandle)
 	//Enable SPI Periheral clock
 	spi_peripheral_clock_enable(pSPIHandle->pSPIx);
 
-	//Configure SPI_CR1 register
-	uint32_t tempreg = 0;
+	//Configure SPI peripheral registers
+	spi_config(pSPIHandle);
 
-	if (pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_MASTER)
-	{
-		spi_master_config(pSPIHandle);
-	}
-	else
-	{
-		spi_slave_config(pSPIHandle);
-	}
-
+	//Enable SPI peripheral
 	spi_peripheral_enable(pSPIHandle->pSPIx);
-
-	return;
 }
 
 /*********************************************************************
@@ -114,7 +116,7 @@ void spi_init(SPI_Handle_t *pSPIHandle)
  *
  * @brief			-Configures the SPI peripheral for operation in master mode
  *
- * @param[in]		-
+ * @param[in]		- pSPIx, Struct containing SPI interface and location of SPI registers
  * @param[in]		-
  * @param[in]		-
  *
@@ -122,74 +124,62 @@ void spi_init(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void spi_master_config(SPI_Handle_t *pSPIHandle)
+void spi_config(SPI_Handle_t *pSPIHandle)
 {
-	uint16_t tempreg1 = 0; //For SPI_CR1
-	uint16_t tempreg2 = 0; //For SPI_CR2
+	uint16_t spi_cr1_config = pSPIHandle->pSPIx->SPI_CR1; //For SPI_CR1
+	uint16_t spi_cr2_config = pSPIHandle->pSPIx->SPI_CR2; //For SPI_CR2
 
-	//1. Set the MSTR bit
-	tempreg1 |= (1 << SPI_CR1_MSTR);
+	//1. Configure the SPI serial clock speed (baud rate)
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR);
 
-	//2. Configure the SPI serial clock speed (baud rate)
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_Speed << SPI_CR1_BR);
+	//2. Select CPOL and CPHA bits
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL);
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA);
 
-	//3. Select CPOL and CPHA bits
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL);
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA);
-
-	//4. Set the DFF bit to define 8 or 16bit data frame format
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF);
-
-#if 0
-	//5. Configure the LSBFIRST bit (NOT REQUIRED WHEN TI MODE IS SELECTED)
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_LSB_FIRST << SPI_CR1_LSB_FIRST);
-#endif
-
-	//6. Configure slave select management (SSM)
-	tempreg1 |= (pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM);
-	/* NOTE: If the NSS pin is required in input mode, in hardware mode, connect the NSS pin to a
-	 * 		high-level signal during the complete byte transmit sequence. In NSS software mode,
-	 * 		set the SSM and SSI bits in the SPI_CR1 register.
-	 * 
-	 * NOTE: If the NSS pin is required in output
-	 * 		mode, the SSOE bit only should be set. This step is not required when the TI mode is selected.
-	 * 
-	 * TODO: Configure SPI_CR2_SSOE according to step 5 Notes
-	 */
-
-	//7. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
-	tempreg2 |= (1 << SPI_CR2_FRF);
-
-	//8. Configure the bus config
-	if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_FULL_DUPLEX)
+	//3. Configure the bus config
+	switch (pSPIHandle->SPIConfig.SPI_BusConfig)
 	{
-		//bidi mode (bit 15) should be cleared
-		tempreg1 &= ~(1 << 15);
+	case SPI_BUS_FULL_DUPLEX:
+		spi_set_full_duplex_mode(pSPIHandle->pSPIx);
+		break;
+
+	case SPI_BUS_HALF_DUPLEX:
+		spi_set_half_duplex_mode(pSPIHandle->pSPIx);
+		break;
+
+	case SPI_BUS_SIMPLEX:
+		spi_set_simplex_mode(pSPIHandle->pSPIx);
+		break;
+	default:
+		// Set unidirectional data mode, clear SPI_CR1_BIDIMODE
+		spi_cr1_config &= ~(1 << SPI_CR1_BIDI_MODE);
+		break;
 	}
-	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_HALF_DUPLEX)
-	{
-		//bidi mode should be set
-		tempreg1 |= (1 << 15);
-	}
-	else if (pSPIHandle->SPIConfig.SPI_BusConfig == SPI_BUS_SIMPLEX)
-	{
-		//bidi mode should be cleared
-		tempreg1 &= ~(1 << 15);
-		//RXONLY (bit 10) must be set
-		tempreg1 |= (1 << 10);
-	}
+
+	//4. Configure the LSBFIRST bit (NOT REQUIRED WHEN TI MODE IS SELECTED)
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_LSB_FIRST << SPI_CR1_LSB_FIRST);
+
+	//5. Configure SSM, SSI, SSOE
+	spi_slave_select_config(pSPIHandle);
+
+	//6. Set device mode
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR);
+
+	//7. Set the DFF bit to define 8 or 16bit data frame format
+	spi_cr1_config |= (pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF);
+
+	//8. Set the FRF bit in SPI_CR2 to select the TI protocol for serial communications
+	spi_cr2_config |= (1 << SPI_CR2_FRF);
 
 	// Save configurations
-	pSPIHandle->pSPIx->SPI_CR1 = tempreg1;
-	pSPIHandle->pSPIx->SPI_CR2 = tempreg2;
-
-	return;
+	pSPIHandle->pSPIx->SPI_CR1 |= spi_cr1_config;
+	pSPIHandle->pSPIx->SPI_CR2 |= spi_cr2_config;
 }
 
 /*********************************************************************
- * @fn				-spi_slave_config
+ * @fn				-spi_set_simplex_mode
  *
- * @brief			-Configures the SPI peripheral for operation in slave mode
+ * @brief			- Configures SPI_CR1 to select simplex mode
  *
  * @param[in]		-
  * @param[in]		-
@@ -199,22 +189,90 @@ void spi_master_config(SPI_Handle_t *pSPIHandle)
  *
  * @Note			-  none
  */
-void spi_slave_config(SPI_Handle_t *pSPIHandle)
+void spi_set_simplex_mode(SPI_RegDef_t *pSPIx)
 {
-	/** Procedure (TODO)
-	 * 1. Set the DFF bit to define 8bit or 16bit data frame format
-	 * 2. Select the CPOL and CPHA bits to define one of the four relationships between the data transfer and the serial clock
-	 * 3. Set frame format (MSB-first or LSB-first) to the same as the master device
-	 * 4. If NSS software mode, set the SSM bit and clear the SSI bit in the SPI_CR1 register
-	 * 5. Set the FRF bit in the SPI_CR2 register to select the TI mode protocol for serial communciations
-	 * 6. Clear the MSTR bit and set the SPE bit to assign the pins to alternate function
-	 */
-
-	return;
+	//bidi mode should be cleared
+	pSPIx->SPI_CR1 &= ~(1 << SPI_CR1_BIDI_MODE);
+	//RXONLY (bit 10) must be set
+	pSPIx->SPI_CR1 |= (1 << SPI_CR1_RXONLY);
 }
 
 /*********************************************************************
- * @fn				-
+ * @fn				-spi_set_half_duplex_mode
+ *
+ * @brief			-Configures SPI_CR1 to select half-duplex mode
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_set_half_duplex_mode(SPI_RegDef_t *pSPIx)
+{
+	//bidi mode should be set
+	pSPIx->SPI_CR1 |= (1 << SPI_CR1_BIDI_MODE);
+}
+
+/*********************************************************************
+ * @fn				-spi_set_full_duplex_mode
+ *
+ * @brief			-Configures SPI_CR1 to select full duplex mode
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_set_full_duplex_mode(SPI_RegDef_t *pSPIx)
+{
+	//bidi mode (bit 15) should be cleared
+	pSPIx->SPI_CR1 &= ~(1 << SPI_CR1_BIDI_MODE);
+}
+
+/*********************************************************************
+ * @fn				-spi_slave_select_config
+ *
+ * @brief			-Configures SPI software/hardware slave select configurations
+ *
+ * @param[in]		-
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			-  none
+ *
+ * @Note			-  none
+ */
+void spi_slave_select_config(SPI_Handle_t *pSPIHandle)
+{
+	if (pSPIHandle->SPIConfig.SPI_SSM == SPI_SSM_EN)
+	{
+		// Set software slave select
+		//NOTE: SPI_CR1_SSI must be set to avoid a MODF error
+		pSPIHandle->pSPIx->SPI_CR1 |= (1 << SPI_CR1_SSM);
+		spi_ssi_config(pSPIHandle->pSPIx, ENABLE);
+	}
+	else if (pSPIHandle->SPIConfig.SPI_NSS == SPI_NSS_EN && pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_MASTER)
+	{
+		// Set NSS output enable configuration
+		pSPIHandle->pSPIx->SPI_CR1 &= ~(1 << SPI_CR1_SSM);
+		pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_SSOE);
+	}
+	else if (pSPIHandle->SPIConfig.SPI_NSS == SPI_NSS_DI && pSPIHandle->SPIConfig.SPI_DeviceMode == SPI_DEVICE_MODE_MASTER)
+	{
+		// Set NSS output disable configuration
+		pSPIHandle->pSPIx->SPI_CR1 &= ~(1 << SPI_CR1_SSM);
+		pSPIHandle->pSPIx->SPI_CR2 &= (~1 << SPI_CR2_SSOE);
+	}
+}
+
+/*********************************************************************
+ * @fn				-spi_transmit_data
  *
  * @brief			-
  *
@@ -234,24 +292,22 @@ void spi_transmit_data(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
 	{
 		//Wait until the Tx buffer is empty before proceeding
 		while (!spi_get_flag_status(pSPIx, SPI_FLAG_TXE))
+			;
+		//Deterine if the DFF is 16bit (1) or 8bit (0)
+		if ((pSPIx->SPI_CR1) & (1 << SPI_CR1_DFF))
 		{
-			//Deterine if the DFF is 16bit (1) or 8bit (0)
-			if ((pSPIx->SPI_CR1) & (1 << SPI_CR1_DFF))
-			{
-				pSPIx->SPI_DR = *((uint16_t *)pTxBuffer);
-				len--;
-				len--;
-				(uint16_t *)pTxBuffer++;
-			}
-			else
-			{
-				pSPIx->SPI_DR = *pTxBuffer;
-				len--;
-				pTxBuffer++;
-			}
+			pSPIx->SPI_DR = *((uint16_t *)pTxBuffer);
+			len--;
+			len--;
+			(uint16_t *)pTxBuffer++;
+		}
+		else
+		{
+			pSPIx->SPI_DR = *pTxBuffer;
+			len--;
+			pTxBuffer++;
 		}
 	}
-	return;
 }
 
 /*********************************************************************
@@ -272,25 +328,24 @@ void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 {
 	while (len > 0)
 	{
-		//1. wait until RXNE flag is set
-		while (spi_get_flag_status(pSPIx, SPI_FLAG_RXNE))
+		// Wait until RXNE flag is set
+		while (!spi_get_flag_status(pSPIx, SPI_FLAG_RXNE))
+			;
+
+		//Deterine if the DFF is 16bit (1) or 8bit (0)
+		if (pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
 		{
-			if (pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
-			{
-				//16 bit DFF
-				//1. Load the data from DR to RxBuffer address
-				*((uint16_t *)pRxBuffer) = pSPIx->SPI_DR;
-				len -= 2;
-				(uint16_t *)pRxBuffer++;
-			}
-			else
-			{
-				//8 bit DFF
-				//1. Load the data from DR to RxBuffer address
-				pRxBuffer = pSPIx->SPI_DR;
-				len--;
-				pRxBuffer++;
-			}
+			//16 bit DFF
+			*((uint16_t *)pRxBuffer) = pSPIx->SPI_DR;
+			len -= 2;
+			(uint16_t *)pRxBuffer++;
+		}
+		else
+		{
+			//8 bit DFF
+			pRxBuffer = pSPIx->SPI_DR;
+			len--;
+			pRxBuffer++;
 		}
 	}
 }
@@ -311,7 +366,6 @@ void spi_recieve_data(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
 void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
 {
 	pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
-	return;
 }
 
 /*********************************************************************
@@ -330,7 +384,6 @@ void spi_peripheral_enable(SPI_RegDef_t *pSPIx)
 void spi_peripheral_disable(SPI_RegDef_t *pSPIx)
 {
 	pSPIx->SPI_CR1 &= ~(0 << SPI_CR1_SPE);
-	return;
 }
 
 /*********************************************************************

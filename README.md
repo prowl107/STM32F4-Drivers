@@ -1,5 +1,5 @@
 # STM32F4-Drivers
-> A collection of low level drivers for STM32F4 sseries microcontrollers. 
+> A collection of low level drivers for STM32F4 series microcontrollers. 
 
 ## About
 The goal of this project was to write a collection of low level drivers to understand more about developing embedded software. The project is developed using embedded C. Having to write the drivers myself required that I took the time to learn and understand the peripheral/protocol throughly. The process so far has been challenging but rewarding.

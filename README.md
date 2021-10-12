@@ -29,5 +29,5 @@ cd STM32F4-Drivers
 
 
 ## Tested on
-- [STM32F4Discovery]() 
-- [Nucleo F413ZH]()
+- [STM32F4Discovery](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) 
+- [Nucleo F413ZH](https://www.google.com/search?channel=fs&client=ubuntu&q=nucleo+f413zh)

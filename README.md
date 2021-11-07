@@ -4,7 +4,7 @@
 ## About
 The goal of this project was to write a collection of low-level drivers to understand more about developing embedded software. The project has been developed using embedded C. Having to write the drivers myself required that I took the time to learn and understand the peripheral/protocol thoroughly. The process so far has been challenging but rewarding.
 
-## Instalation Options
+## Installation Options
 
 ### Manual Installation
 1. Download the source code by pressing [Download Zip](https://github.com/prowl107/STM32F4-Drivers/archive/refs/heads/master.zip)
